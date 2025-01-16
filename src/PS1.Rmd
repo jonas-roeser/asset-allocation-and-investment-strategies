@@ -1,5 +1,19 @@
 ---
-title: "PS1"
+title: "PS1: Group 1"
+author: Jonas Roeser
 output: html_document
 ---
+
+### Load packages
+```{r}
+library(readxl)
+```
+
+### Load data
+```{r}
+indexes <- read_excel("../data/PS1_data.xls", sheet="hard_copy", range="E1:L3", col_names = FALSE)
+prices <- read_excel("../data/PS1_data.xls", sheet="hard_copy", range="D3:L3245")
+exchange_rates <- read_excel("../data/PS1_data.xls", sheet="hard_copy", range="N1:U3245")
+market_cap <- read_excel("../data/PS1_data.xls", sheet="market_cap")
+```
 
