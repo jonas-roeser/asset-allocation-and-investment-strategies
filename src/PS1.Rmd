@@ -1,19 +1,86 @@
 ---
-title: "PS1: Group 1"
-author: Jonas Roeser
-output: html_document
+title: 'PS1: Group 1'
+author: "Jonas Roeser"
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ### Load packages
 ```{r}
 library(readxl)
+library(tidyverse)
+library(moments)
 ```
 
 ### Load data
 ```{r}
-indexes <- read_excel("../data/PS1_data.xls", sheet="hard_copy", range="E1:L3", col_names = FALSE)
-prices <- read_excel("../data/PS1_data.xls", sheet="hard_copy", range="D3:L3245")
-exchange_rates <- read_excel("../data/PS1_data.xls", sheet="hard_copy", range="N1:U3245")
-market_cap <- read_excel("../data/PS1_data.xls", sheet="market_cap")
+tickers <- read_excel("../data/PS1_data.xls", sheet="hard_copy", range="E2:L2", col_names=FALSE) %>%
+  unlist(use.names=FALSE) %>%
+  gsub(" INDEX", "", .)
+names <- read_excel("../data/PS1_data.xls", sheet="hard_copy", range="E3:L3", col_names=FALSE) %>%
+  unlist(use.names=FALSE)
+currencies <- read_excel("../data/PS1_data.xls", sheet="hard_copy", range="E1:L1", col_names=FALSE) %>%
+  unlist(use.names=FALSE)
+market_caps <- read_excel("../data/PS1_data.xls", sheet="market_cap", range="B3:I3", col_names=FALSE) %>%
+  unlist(use.names=FALSE)
+dates <- read_excel("../data/PS1_data.xls", sheet="hard_copy", range="D3:D3244")$date %>%
+  as.Date("%m/%d/%y")
+prices <- read_excel("../data/PS1_data.xls", sheet="hard_copy", range="E4:L3244", col_names=tickers)
+exchange_rates <- read_excel("../data/PS1_data.xls", sheet="hard_copy", range="N4:U3244", col_names=currencies)
+
+# create index overview
+indexes <- tibble(
+  ticker = tickers,
+  name = names,
+  currency = currencies,
+  market_cap = market_caps
+  )
+
+# convert prices to USD
+prices_usd <-prices * exchange_rates
+
+# clear memory
+rm(names, market_caps, tickers, currencies, prices, exchange_rates)
 ```
 
+### Question 1 (Returns statistics)
+Compute daily log returns and summary statistics for each index. Calculate mean, standard deviation, skewness, kurtosis, autocorrelation of returns, and the correlation matrix. Evaluate whether it is reasonable to approximate the return process by an i.i.d. Gaussian distribution.
+
+```{r}
+# compute daily log returns
+log_returns <- as.matrix(prices_usd) %>%
+  log() %>% # convert to log
+  diff() %>% # returns
+  as.data.frame() # convert to data frame
+
+# compute summary statistics
+summary_stats <- data.frame(
+  mean = sapply(log_returns, mean),
+  sd = sapply(log_returns, sd),
+  skewness = sapply(log_returns, skewness),
+  kurtosis = sapply(log_returns, kurtosis),
+  autocorr = sapply(log_returns, function(x) acf(x, lag.max = 1, plot = FALSE)$acf[2])
+)
+
+# compute correlation matrix
+correlation_matrix <- cor(log_returns)
+```
+
+### Question 2 (MVanalysis#1)
+In the traditional mean-variance approach the user inputs a complete set of expected returns and the portfolio optimizer generates optimal portfolio weights. The R library quadprog provides a function for numerically solving quadratic optimization problems with the objective function:
+
+with the option to include additional equality and inequality constraints. Using the course notes, map the Markovitz solution to this routine and solve for the standard portfolio weights w. Plot the annualized historical returns for your test assets along with the mean-variance eﬀcient frontier and mark the tangency portfolio (maximum Sharpe ratio).
+
+Notice, how extreme the weights are. Redo the exercise introducing ‘no short-sale constraint’ (i.e. restriction of non-negative weights).
+```{r}
+
+```
+
+### Question 3 (MV analysis #2)
+Repeat the previous exercise with rolling window of 5 years starting with beginning of 2010 to end of 2014 until beginning of 2017 to end of 2021.
+
+Finally, how do the mean-variance weights compare to the market cap-based weights?
+```{r}
+
+```
